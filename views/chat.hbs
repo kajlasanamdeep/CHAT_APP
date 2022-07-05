@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>chat page</title>
+</head>
+<style>
+    .Send-btn{
+        margin: 5px;
+        padding: 5px;
+        background-color: green;
+        color:white;
+    }
+    .msg-input{
+        width: 270px;
+        padding: 5px;
+    }
+    .messages-list {
+        border: 1px solid black;
+        background-color: skyblue;
+        overflow-y: auto;
+        scroll-behavior: smooth;
+        width: 300px;
+        height: 300px;
+        padding: 25px;
+    }
+    .sended-messages {
+        background-color: white;
+        border-radius: 25%;
+        float: right;
+        padding: 10px;
+        margin: 2px;
+        width: 60px;
+        clear: both;
+    }
+    .received-messages {
+        background-color: white;
+        border-radius: 25%;
+        padding: 10px;
+        float: left;
+        margin: 2px;
+        width: 60px;
+        clear: both;
+    }
+    .tab-btn{
+        align-self:left;
+        margin: 5px;
+        padding: 5px;
+        width: 100px;
+    }
+    #contacts{
+        width: 400px;
+    }
+    #add-btn{
+        margin: 5px;
+        padding: 5px;
+        background-color: skyblue; 
+    }
+    b{
+        width: max-content;
+        color:brown;
+        font-size: large;
+    }
+</style>
+<body>
+    <center>
+        <h1>{{username}}</h1>
+        <div id="chat-box">
+        <form action="/addContact" method="post">
+        <input type="hidden" name="userID" value="{{id}}">
+        <input type="hidden" name="username" value="{{username}}"/>
+        <input type="text" class="msg-input" name="contactName" placeholder="Enter username of contact" />
+        <input type="submit" id="add-btn" value="Add" />
+        </form>
+        <nav id="contacts"></nav>
+        </div>
+    </center>
+</body>
+<script src="/socket.io/socket.io.js"></script>
+<script type="text/javascript">
+let username = "{{username}}",id = "{{id}}"
+    const socket = io();
+    socket.emit('active_user',{userID:id,username:username});
+    {{#each contacts}}
+        var div = document.createElement('div');
+        div.id = "{{this.contact.id}}";
+        div.className = "user-tab";
+        var ul = document.createElement('ul');
+        ul.className = "messages-list";
+        ul.style.listStyleType = "none";
+        ul.id = "{{this.contact.id}}-messages";
+        div.appendChild(ul);
+        var msgInput = document.createElement('input');
+        msgInput.type = "text";
+        msgInput.className = 'msg-input';
+        msgInput.id = "message-{{this.contact.id}}";
+        var btn = document.createElement('button');
+        btn.innerText = "Send";
+        btn.className = 'Send-btn';
+        btn.onclick = function () {
+            let msg = document.getElementById("message-{{this.contact.id}}").value;
+            socket.emit('send_message', {contactName:"{{this.contact.username}}",message:msg,contactID:"{{this.contact.id}}"});
+            let li = document.createElement('li');
+            li.className = "sended-messages";
+            li.innerHTML = `<b>${username}</b> ${msg}`;
+            document.getElementById("{{this.contact.id}}-messages").appendChild(li);
+            document.getElementById("message-{{this.contact.id}}").value = '';
+        }
+        div.append(msgInput, btn);
+        div.style.display = "none";
+        document.getElementById('chat-box').appendChild(div);
+        var contact = document.createElement('button');
+        contact.innerText = "{{this.contact.username}}";
+        contact.className = "tab-btn"
+        contact.onclick = function () {
+            let tabs = document.getElementsByClassName("user-tab");
+            for (i = 0; i < tabs.length; i++) {
+                tabs[i].style.display = "none";
+            }
+            let tabs_btns = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tabs_btns.length; i++) {
+                tabs_btns[i].style.backgroundColor = "skyblue";
+            }
+            document.getElementById("{{this.contact.id}}").style.display = "block";
+            this.style.backgroundColor = "lightgreen";
+        }
+        contact.style.backgroundColor = "skyblue"
+        document.getElementById('contacts').appendChild(contact);
+    {{/each}}
+    {{#each messages}}
+        if("{{this.receiver.id}}"===id){
+        let li = document.createElement('li');
+        li.className = "received-messages";
+        li.innerHTML = "<b>{{this.sender.username}}</b> {{this.message}}";
+        document.getElementById("{{this.sender.id}}-messages").append(li);
+        }
+        if("{{this.sender.id}}"===id){
+        let li = document.createElement('li');
+        li.className = "sended-messages";
+        li.innerHTML = "<b>{{this.sender.username}}</b> {{this.message}}";
+        document.getElementById("{{this.receiver.id}}-messages").append(li);
+        }
+    {{/each}}
+
+    socket.on('message', (data) => {
+        let li = document.createElement('li');
+        li.className = "received-messages";
+        li.innerHTML = `<b>${data.contactName}</b> ${data.message}`;
+        document.getElementById(`${data.contactID}-messages`).append(li);
+    })
+</script>
+
+</html>

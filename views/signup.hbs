@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>signup page</title>
+</head>
+<style>
+    form{
+        border:1px solid blue;
+        width:300px;
+        height: 250px;
+        background-color:skyblue;
+    }
+    input{
+        width: 250px;
+        padding: 5px;
+        margin: 10px;
+    }
+    button{
+        margin: 5px;
+        padding: 5px;
+        width: 100px;
+        background-color:green;
+        color:white;
+    }
+</style>
+<body>
+    <center>
+        <form action="/signup" method="post">
+            <br>
+            <b>{{message}}</b>
+            <br>
+            <input name="username" type="text" maxlength="15" placeholder="Create your Username...." required/>
+            <br>
+            <input name="password" type="password" minlength="6" placeholder="Create your Password...." required/>
+            <br>
+            <button type="submit">Sign Up</button>
+            <br>
+            <b>OR</b>
+            <br>
+            <a href="/">Login Here</a>
+        </form>
+    </center>   
+</body>
+</html>
