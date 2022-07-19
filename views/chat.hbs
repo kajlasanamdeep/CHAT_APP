@@ -81,23 +81,23 @@
 </body>
 <script src="/socket.io/socket.io.js"></script>
 <script type="text/javascript">
-let username = "{{username}}",id = "{{id}}"
+let username = "{{username}}",id = "{{id}}",div,ul,msgInput,btn,contact;
     const socket = io();
     socket.emit('active_user',{userID:id,username:username});
     {{#each contacts}}
-        var div = document.createElement('div');
+        div = document.createElement('div');
         div.id = "{{this.contact.id}}";
         div.className = "user-tab";
-        var ul = document.createElement('ul');
+        ul = document.createElement('ul');
         ul.className = "messages-list";
         ul.style.listStyleType = "none";
         ul.id = "{{this.contact.id}}-messages";
         div.appendChild(ul);
-        var msgInput = document.createElement('input');
+        msgInput = document.createElement('input');
         msgInput.type = "text";
         msgInput.className = 'msg-input';
         msgInput.id = "message-{{this.contact.id}}";
-        var btn = document.createElement('button');
+        btn = document.createElement('button');
         btn.innerText = "Send";
         btn.className = 'Send-btn';
         btn.onclick = function () {
@@ -112,7 +112,7 @@ let username = "{{username}}",id = "{{id}}"
         div.append(msgInput, btn);
         div.style.display = "none";
         document.getElementById('chat-box').appendChild(div);
-        var contact = document.createElement('button');
+        contact = document.createElement('button');
         contact.innerText = "{{this.contact.username}}";
         contact.className = "tab-btn"
         contact.onclick = function () {
@@ -146,11 +146,18 @@ let username = "{{username}}",id = "{{id}}"
     {{/each}}
 
     socket.on('message', (data) => {
+        let reply = window.prompt(`From:${data.contactName}\nMsg:${data.message}`);
         let li = document.createElement('li');
         li.className = "received-messages";
         li.innerHTML = `<b>${data.contactName}</b> ${data.message}`;
         document.getElementById(`${data.contactID}-messages`).append(li);
+        if(reply){
+            socket.emit('send_message', {contactName:data.contactName,message:reply,contactID:data.contactID});
+            let li = document.createElement('li');
+            li.className = "sended-messages";
+            li.innerHTML = `<b>${username}</b> ${reply}`;
+            document.getElementById(`${data.contactID}-messages`).append(li);
+        }
     })
 </script>
-
 </html>
